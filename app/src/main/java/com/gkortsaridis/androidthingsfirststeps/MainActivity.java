@@ -1,31 +1,24 @@
 package com.gkortsaridis.androidthingsfirststeps;
 
 import android.app.Activity;
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import com.gkortsaridis.androidthingsfirststeps.Music.AdvancedSpeaker;
-import com.gkortsaridis.androidthingsfirststeps.Music.Notes;
 import com.google.android.things.contrib.driver.button.Button;
 import com.google.android.things.contrib.driver.button.ButtonInputDriver;
-import com.google.android.things.contrib.driver.pwmspeaker.Speaker;
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManagerService;
-import com.google.android.things.pio.Pwm;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static java.lang.Thread.sleep;
 
 public class MainActivity extends Activity {
 
+    //The GPIO pin names i am going to use
     private static final String GPIO_RGB_RED = "BCM19";
     private static final String GPIO_RGB_GREEN = "BCM6";
     private static final String GPIO_RGB_BLUE = "BCM5";
@@ -38,12 +31,15 @@ public class MainActivity extends Activity {
     private static final String GPIO_LED6 = "BCM20";
     private static final String GPIO_LED7 = "BCM26";
 
-
-    private Switch redSw,blueSw, greenSw;
+    //The GPIO objects i am going to use
     private Gpio mLedGpioRed,mLedGpioGreen,mLedGpioBlue;
     private Gpio mLed1,mLed2,mLed3,mLed4,mLed5,mLed6,mLed7;
     private ButtonInputDriver mButtonInputDriver;
 
+    //Any UI element i am going to use
+    private Switch redSw,blueSw, greenSw;
+
+    //Rest variables :)
     private Thread custListLoadThread;
     private int rgbState = 0;
 
@@ -52,13 +48,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Quickly setting up the Switch object for our RGB LED
         rgbSwitchesSetup();
 
+        //Displaying our available GPIO pins to play with
         PeripheralManagerService service = new PeripheralManagerService();
         Log.i("Your Available GPIOs",service.getGpioList().toString());
 
         try {
-
+            //Opening and registering our I/O Objects
             mLed1 = service.openGpio(GPIO_LED1);
             mLed2 = service.openGpio(GPIO_LED2);
             mLed3 = service.openGpio(GPIO_LED3);
@@ -86,6 +84,7 @@ public class MainActivity extends Activity {
             mButtonInputDriver = new ButtonInputDriver(GPIO_BUTTON, Button.LogicState.PRESSED_WHEN_LOW, KeyEvent.KEYCODE_0);
             mButtonInputDriver.register();
 
+            //Creating a non-stop loop (Something like the loop function of an Arduino project)
             Runnable r=new Runnable() {
                 public void run() {
                     try {
@@ -105,6 +104,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    //Setting up our RGB switch objects
     public void rgbSwitchesSetup(){
         redSw = (Switch) findViewById(R.id.swRed);
         greenSw = (Switch) findViewById(R.id.swGreen);
@@ -145,6 +145,7 @@ public class MainActivity extends Activity {
         });
     }
 
+    //The Arduino-like loop function, non-stop code
     public void loop() throws IOException {
         int del = 150;
 
@@ -179,6 +180,7 @@ public class MainActivity extends Activity {
         delay(del);
     }
 
+    //Delaying the code execution for {milis} miliseconds
     public void delay(long milis){
         try{
             sleep(milis);
@@ -188,6 +190,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    //The button is being pressed down!
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_0) {
@@ -198,6 +201,7 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
+    //Hey, the button was just pressed! Do your stuff!
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_0) {
@@ -213,6 +217,7 @@ public class MainActivity extends Activity {
         return super.onKeyUp(keyCode, event);
     }
 
+    //Changing the RGB state both on UI (switches) and changing the led color
     private void changeRGBstate() throws IOException {
         if(rgbState < 3){
             rgbState++;
@@ -252,6 +257,8 @@ public class MainActivity extends Activity {
 
     }
 
+    //Everything is over.
+    //Please, clean up after your mess...
     @Override
     protected void onDestroy() {
         super.onDestroy();
