@@ -30,43 +30,50 @@ public class MainActivity extends Activity {
     private static final String GPIO_RGB_GREEN = "BCM6";
     private static final String GPIO_RGB_BLUE = "BCM5";
     private static final String GPIO_BUTTON = "BCM21";
+    private static final String GPIO_LED1 = "BCM23";
+    private static final String GPIO_LED2 = "BCM24";
+    private static final String GPIO_LED3 = "BCM25";
+    private static final String GPIO_LED4 = "BCM12";
+    private static final String GPIO_LED5 = "BCM16";
+    private static final String GPIO_LED6 = "BCM20";
+    private static final String GPIO_LED7 = "BCM26";
+
 
     private Switch redSw,blueSw, greenSw;
-
     private Gpio mLedGpioRed,mLedGpioGreen,mLedGpioBlue;
-    private Gpio led1,led2,led3,led4,led5,led6,led7;
+    private Gpio mLed1,mLed2,mLed3,mLed4,mLed5,mLed6,mLed7;
     private ButtonInputDriver mButtonInputDriver;
 
-    Thread custListLoadThread;
-
-    int rgbState = 0;
+    private Thread custListLoadThread;
+    private int rgbState = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rgbSwitches();
+        rgbSwitchesSetup();
 
         PeripheralManagerService service = new PeripheralManagerService();
-        Log.i("Available GPIOs",service.getGpioList().toString());
+        Log.i("Your Available GPIOs",service.getGpioList().toString());
 
         try {
 
-            led1 = service.openGpio("BCM23");
-            led1.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led2 = service.openGpio("BCM24");
-            led2.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led3 = service.openGpio("BCM25");
-            led3.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led4 = service.openGpio("BCM12");
-            led4.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led5 = service.openGpio("BCM16");
-            led5.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led6 = service.openGpio("BCM20");
-            led6.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-            led7 = service.openGpio("BCM26");
-            led7.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed1 = service.openGpio(GPIO_LED1);
+            mLed2 = service.openGpio(GPIO_LED2);
+            mLed3 = service.openGpio(GPIO_LED3);
+            mLed4 = service.openGpio(GPIO_LED4);
+            mLed5 = service.openGpio(GPIO_LED5);
+            mLed6 = service.openGpio(GPIO_LED6);
+            mLed7 = service.openGpio(GPIO_LED7);
+
+            mLed1.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed2.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed3.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed4.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed5.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed6.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mLed7.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
 
             mLedGpioRed = service.openGpio(GPIO_RGB_RED);
             mLedGpioGreen = service.openGpio(GPIO_RGB_GREEN);
@@ -76,38 +83,29 @@ public class MainActivity extends Activity {
             mLedGpioGreen.setDirection(Gpio.DIRECTION_OUT_INITIALLY_HIGH);
             mLedGpioBlue.setDirection(Gpio.DIRECTION_OUT_INITIALLY_HIGH);
 
-            mButtonInputDriver = new ButtonInputDriver(
-                    GPIO_BUTTON,
-                    Button.LogicState.PRESSED_WHEN_LOW,
-                    KeyEvent.KEYCODE_0);
+            mButtonInputDriver = new ButtonInputDriver(GPIO_BUTTON, Button.LogicState.PRESSED_WHEN_LOW, KeyEvent.KEYCODE_0);
             mButtonInputDriver.register();
+
+            Runnable r=new Runnable() {
+                public void run() {
+                    try {
+                        loop();
+                        custListLoadThread.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            custListLoadThread = new Thread(r);
+            custListLoadThread.start();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        final Handler handler = new Handler();
-
-
-        Runnable r=new Runnable() {
-            public void run() {
-                try {
-                    loop();
-                    custListLoadThread.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        custListLoadThread = new Thread(r);
-        custListLoadThread.start();
-
-
-
     }
 
-    public void rgbSwitches(){
+    public void rgbSwitchesSetup(){
         redSw = (Switch) findViewById(R.id.swRed);
         greenSw = (Switch) findViewById(R.id.swGreen);
         blueSw = (Switch) findViewById(R.id.swBlue);
@@ -150,36 +148,35 @@ public class MainActivity extends Activity {
     public void loop() throws IOException {
         int del = 150;
 
-        led1.setValue(true);
+        mLed1.setValue(true);
         delay(del);
-        led2.setValue(true);
+        mLed2.setValue(true);
         delay(del);
-        led3.setValue(true);
+        mLed3.setValue(true);
         delay(del);
-        led4.setValue(true);
+        mLed4.setValue(true);
         delay(del);
-        led5.setValue(true);
+        mLed5.setValue(true);
         delay(del);
-        led6.setValue(true);
+        mLed6.setValue(true);
         delay(del);
-        led7.setValue(true);
-        delay(del);
-
-        led1.setValue(false);
-        delay(del);
-        led2.setValue(false);
-        delay(del);
-        led3.setValue(false);
-        delay(del);
-        led4.setValue(false);
-        delay(del);
-        led5.setValue(false);
-        delay(del);
-        led6.setValue(false);
-        delay(del);
-        led7.setValue(false);
+        mLed7.setValue(true);
         delay(del);
 
+        mLed1.setValue(false);
+        delay(del);
+        mLed2.setValue(false);
+        delay(del);
+        mLed3.setValue(false);
+        delay(del);
+        mLed4.setValue(false);
+        delay(del);
+        mLed5.setValue(false);
+        delay(del);
+        mLed6.setValue(false);
+        delay(del);
+        mLed7.setValue(false);
+        delay(del);
     }
 
     public void delay(long milis){
@@ -259,11 +256,21 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (mLedGpioRed!=null){
+        if (mButtonInputDriver!=null){
             try {
+                mLed1.close();
+                mLed2.close();
+                mLed3.close();
+                mLed4.close();
+                mLed5.close();
+                mLed6.close();
+                mLed7.close();
+
                 mLedGpioRed.close();
                 mLedGpioBlue.close();
                 mLedGpioGreen.close();
+
+                mButtonInputDriver.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
